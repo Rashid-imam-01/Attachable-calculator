@@ -62,7 +62,14 @@ No installation required!
 
 ## 📸 Screenshot
 
+<p align="center">
+  <h1> Calculator Preview</h1><img src="preview.jpg" alt="Calculator Preview" width="600"/>
+</p>
 
+<p align="center">
+  <h1> Calculator Resized View</h1><img src="resized-view.jpg" alt="Calculator Resized View" width="300"/>
+  <h1>Calculator Attached View</h1><img src="attached-view.jpg" alt="Calculator Attached Mode" width="300"/>
+</p>
 
 ---
 
@@ -90,4 +97,3 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-Let me know if you want to add a GIF, additional instructions, or badges!
