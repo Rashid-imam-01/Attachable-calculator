@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stylish On-Screen Calculator</title>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #e0f7fa, #ede7f6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #calculator {
+      width: 320px;
+      min-width: 220px;
+      min-height: 380px;
+      padding: 24px 18px 18px 18px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, #ce93d8, #80deea);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      position: absolute;
+      top: 60px; left: 60px;
+      user-select: none;
+      transition: box-shadow 0.2s, top 0.2s, left 0.2s;
+      z-index: 10;
+    }
+
+    .calc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: bold;
+      color: #4527a0;
+      font-size: 1.1em;
+      letter-spacing: 1px;
+      cursor: move;
+    }
+
+    #attachBtn {
+      background: #7b1fa2;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 4px 14px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    #attachBtn.attached {
+      background: #4a148c;
+    }
+
+    #calculator.attached {
+      position: fixed !important;
+      top: 18px !important;
+      right: 18px !important;
+      left: unset !important;
+      box-shadow: 0 4px 24px 2px #ab47bc;
+    }
+
+    #watermark {
+      display: none;
+      position: absolute;
+      bottom: 20px;
+      right: 18px;
+      color: #ffffff;
+      font-size: 2.4em;
+      font-weight: bold;
+      opacity: 0.15;
+      pointer-events: none;
+      user-select: none;
+      z-index: 2;
+    }
+
+    #calculator.attached #watermark {
+      display: block;
+      animation: fadein 2s;
+    }
+
+    @keyframes fadein {
+      from {opacity: 0;}
+      to {opacity: 0.15;}
+    }
+
+    #display {
+      width: 100%;
+      font-size: 2em;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #ba68c8;
+      margin-bottom: 20px;
+      background: #ffffffc7;
+      color: #4a148c;
+      text-align: right;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    #buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    #buttons button {
+      font-size: 1.3em;
+      padding: 16px 0;
+      border: none;
+      border-radius: 12px;
+      background: #7e57c2;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px #9575cd;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #buttons button:active {
+      background: #512da8;
+      transform: scale(0.96);
+    }
+
+    #buttons #clear {
+      grid-column: span 4;
+      background: #c62828;
+      font-weight: bold;
+    }
+
+    .resizer {
+      width: 16px;
+      height: 16px;
+      background: transparent;
+      border-radius: 0 0 16px 0;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      cursor: se-resize;
+      z-index: 20;
+    }
+
+    @media (max-width: 480px) {
+      #calculator {
+        width: 95vw;
+        padding: 12px;
+      }
+      #watermark {
+        font-size: 1.4em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="calculator" class="draggable resizable">
+    <div class="calc-header">
+      <span>Calculator</span>
+      <button id="attachBtn">📌 Attach</button>
+    </div>
+    <div id="watermark">Calculator</div>
+    <input type="text" id="display" readonly>
+    <div id="buttons">
+      <button>7</button><button>8</button><button>9</button><button>/</button>
+      <button>4</button><button>5</button><button>6</button><button>X</button>
+      <button>1</button><button>2</button><button>3</button><button>-</button>
+      <button>0</button><button>.</button><button>=</button><button>+</button>
+      <button id="clear">C</button>
+    </div>
+    <div class="resizer"></div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('#buttons button');
+    const calculator = document.getElementById('calculator');
+    const attachBtn = document.getElementById('attachBtn');
+    const watermark = document.getElementById('watermark');
+    let current = '';
+    let attached = false;
+
+    // Evaluate calculation
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        const val = btn.textContent;
+        if (val === 'C') {
+          current = '';
+          display.value = '';
+        } else if (val === '=') {
+          try {
+            current = eval(current.replace('X', '*')).toString();
+            display.value = current;
+          } catch {
+            display.value = 'Error';
+            current = '';
+          }
+        } else {
+          current += val;
+          display.value = current;
+        }
+      };
+    });
+
+    // Attach toggle
+    attachBtn.onclick = () => {
+      attached = !attached;
+      calculator.classList.toggle('attached', attached);
+      attachBtn.classList.toggle('attached', attached);
+      attachBtn.textContent = attached ? '📌 Attached' : '📌 Attach';
+      watermark.style.display = attached ? 'block' : 'none';
+    };
+
+    // Dragging
+    let isDragging = false, dragX = 0, dragY = 0;
+    calculator.querySelector('.calc-header').addEventListener('mousedown', e => {
+      if (attached) return;
+      isDragging = true;
+      dragX = e.clientX - calculator.offsetLeft;
+      dragY = e.clientY - calculator.offsetTop;
+      document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', e => {
+      if (isDragging && !attached) {
+        calculator.style.left = `${e.clientX - dragX}px`;
+        calculator.style.top = `${e.clientY - dragY}px`;
+      }
+    });
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      document.body.style.userSelect = '';
+    });
+
+    // Resize
+    const resizer = calculator.querySelector('.resizer');
+    let resizing = false, lastX = 0, lastY = 0;
+
+    resizer.addEventListener('mousedown', e => {
+      resizing = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!resizing) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const rect = calculator.getBoundingClientRect();
+      calculator.style.width = Math.max(220, rect.width + dx) + 'px';
+      calculator.style.height = Math.max(380, rect.height + dy) + 'px';
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+    document.addEventListener('mouseup', () => {
+      resizing = false;
+    });
+  </script>
+</body>
+</html>
